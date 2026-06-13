@@ -13,7 +13,13 @@ export default function Login() {
   const submit = async (e) => {
     e.preventDefault();
     setLoading(true); setError(''); setMessage('');
-    if (mode === 'login') {
+    if (mode === 'forgot') {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/login',
+      });
+      if (error) setError(error.message);
+      else setMessage('Email inviata! Controlla la posta e clicca il link.');
+    } else if (mode === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setError(error.message);
     } else {
@@ -53,17 +59,33 @@ export default function Login() {
               <label className="fx-label">Email</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="tu@esempio.it" className={inputCls} style={inputStyle} />
             </div>
-            <div className="space-y-1.5">
-              <label className="fx-label">Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" minLength={6} className={inputCls} style={inputStyle} />
-            </div>
+            {mode !== 'forgot' && (
+              <div className="space-y-1.5">
+                <label className="fx-label">Password</label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" minLength={6} className={inputCls} style={inputStyle} />
+              </div>
+            )}
             {error && <p className="text-[12.5px]" style={{ color: 'var(--fx-bad)' }}>{error}</p>}
             {message && <p className="text-[12.5px]" style={{ color: 'var(--fx-ok)' }}>{message}</p>}
             <button type="submit" disabled={loading}
               className="w-full text-white text-[14px] font-semibold rounded-[8px] py-2.5 transition-opacity"
               style={{ background: 'var(--fx-ind)', opacity: loading ? 0.6 : 1 }}>
-              {loading ? 'Attendi…' : (mode === 'login' ? 'Accedi' : 'Crea account')}
+              {loading ? 'Attendi…' : mode === 'login' ? 'Accedi' : mode === 'signup' ? 'Crea account' : 'Invia email di reset'}
             </button>
+            {mode === 'login' && (
+              <button type="button" onClick={() => { setMode('forgot'); setError(''); setMessage(''); }}
+                className="w-full text-[12.5px] text-center transition-colors"
+                style={{ color: 'var(--fx-mut)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                Hai dimenticato la password?
+              </button>
+            )}
+            {mode === 'forgot' && (
+              <button type="button" onClick={() => { setMode('login'); setError(''); setMessage(''); }}
+                className="w-full text-[12.5px] text-center transition-colors"
+                style={{ color: 'var(--fx-mut)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                ← Torna al login
+              </button>
+            )}
           </form>
         </div>
       </div>

@@ -8,6 +8,9 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Login from '@/pages/Login';
 import Landing from '@/pages/Landing';
+import ResetPassword from '@/pages/ResetPassword';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -19,6 +22,14 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 
 const AuthenticatedApp = () => {
   const { user, isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const [isRecovery, setIsRecovery] = useState(false);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') setIsRecovery(true);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -26,6 +37,11 @@ const AuthenticatedApp = () => {
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
       </div>
     );
+  }
+
+  // Callback reset password da Supabase
+  if (isRecovery) {
+    return <ResetPassword onDone={() => setIsRecovery(false)} />;
   }
 
   // Se non autenticato, mostra landing o login
