@@ -15,7 +15,7 @@ export default function Login() {
     setLoading(true); setError(''); setMessage('');
     if (mode === 'forgot') {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/login',
+        redirectTo: window.location.origin + '/reset-password',
       });
       if (error) setError(error.message);
       else setMessage('Email inviata! Controlla la posta e clicca il link.');

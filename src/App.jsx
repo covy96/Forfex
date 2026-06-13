@@ -2,15 +2,13 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Login from '@/pages/Login';
 import Landing from '@/pages/Landing';
 import ResetPassword from '@/pages/ResetPassword';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -22,17 +20,13 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 
 const AuthenticatedApp = () => {
   const { user, isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-  // Controlla subito l'hash dell'URL (sincrono) e l'evento Supabase (asincrono)
-  const [isRecovery, setIsRecovery] = useState(
-    () => window.location.hash.includes('type=recovery')
-  );
+  const location = useLocation();
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setIsRecovery(true);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  // Route pubblica: reset password (hash da Supabase o path dedicato)
+  const isRecovery = location.hash.includes('type=recovery') || location.pathname === '/reset-password';
+  if (isRecovery) {
+    return <ResetPassword />;
+  }
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -40,11 +34,6 @@ const AuthenticatedApp = () => {
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
       </div>
     );
-  }
-
-  // Callback reset password da Supabase
-  if (isRecovery) {
-    return <ResetPassword onDone={() => setIsRecovery(false)} />;
   }
 
   // Se non autenticato, mostra landing o login

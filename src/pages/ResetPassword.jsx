@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { LogoWordmark } from '@/components/brand/Logo';
+import { useNavigate } from 'react-router-dom';
 
-export default function ResetPassword({ onDone }) {
+export default function ResetPassword() {
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,7 @@ export default function ResetPassword({ onDone }) {
     setLoading(false);
     if (error) { setError(error.message); return; }
     setDone(true);
-    setTimeout(() => onDone?.(), 2000);
+    setTimeout(() => navigate('/'), 2000);
   };
 
   return (
