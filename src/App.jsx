@@ -22,7 +22,10 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 
 const AuthenticatedApp = () => {
   const { user, isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-  const [isRecovery, setIsRecovery] = useState(false);
+  // Controlla subito l'hash dell'URL (sincrono) e l'evento Supabase (asincrono)
+  const [isRecovery, setIsRecovery] = useState(
+    () => window.location.hash.includes('type=recovery')
+  );
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
