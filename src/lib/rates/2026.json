@@ -1,0 +1,13 @@
+{
+  "year": 2026,
+  "verified": false,
+  "source": "DA VERIFICARE — bollettini Inarcassa 2026 / circolari INPS",
+  "updated": "2026-06-12",
+  "forfettario": { "coefficiente_professionale": 78 },
+  "inarcassa": {
+    "soggettivo": 14.5, "soggettivo_agevolato": 7.25, "integrativo": 4,
+    "minimo_soggettivo": 2575, "minimo_integrativo": 770, "maternita": 72,
+    "minimo_soggettivo_agevolato": 928, "minimo_integrativo_agevolato": 283.33
+  },
+  "inps_gestione_separata": { "aliquota": 26.07 }
+}
