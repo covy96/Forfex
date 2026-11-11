@@ -1,14 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Save, Check, Calendar, Settings, Landmark, Repeat, Plus } from "lucide-react";
+import { Save, Check, Settings, Landmark, Repeat, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useUserProfile } from '@/lib/useUserProfile';
 import CustomDeadlineSettings from '@/components/scadenze/CustomDeadlineSettings';
@@ -16,6 +12,7 @@ import { computeDeadlinesForYear } from '@/lib/fiscalPlanner';
 import { expandTemplate, templateActive } from '@/lib/recurrence';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import PageHeader, { YearSegment } from '@/components/layout/PageHeader';
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat('it-IT', {
@@ -77,8 +74,9 @@ function DeadlineCard({ title, date, description, descriptionSub, type, calcType
   };
 
   return (
-    <div className="fx-panel" style={{ padding: '16px 18px', borderColor: isPaid ? 'color-mix(in oklch, var(--fx-ok) 40%, var(--fx-line))' : 'var(--fx-line)', background: isPaid ? 'color-mix(in oklch, var(--fx-ok) 5%, var(--fx-panel))' : 'var(--fx-panel)' }}>
-      <div className="flex items-start gap-4">
+    <div className="fx-panel p-4 md:px-[18px]" style={{ borderColor: isPaid ? 'color-mix(in oklch, var(--fx-ok) 40%, var(--fx-line))' : 'var(--fx-line)', background: isPaid ? 'color-mix(in oklch, var(--fx-ok) 5%, var(--fx-panel))' : 'var(--fx-panel)' }}>
+      <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-4">
+        <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
         {/* Quadratino data */}
         <div style={{ width: 46, height: 46, borderRadius: 8, flexShrink: 0, border: '1px solid var(--fx-line)', background: 'var(--fx-chip)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -97,30 +95,34 @@ function DeadlineCard({ title, date, description, descriptionSub, type, calcType
             )}
           </div>
           <p className="text-[11.5px] whitespace-pre-line" style={{ color: 'var(--fx-mut)' }}>{description}</p>
+          <p className="md:hidden fx-num pt-1" style={{ fontSize: 20, fontWeight: 700, color: isPaid ? 'var(--fx-ok)' : 'var(--fx-txt)' }}>{formatCurrency(displayAmount)}</p>
+        </div>
         </div>
 
-        <div className="flex flex-col items-end gap-2.5 min-w-[190px]">
-          <p className="fx-num" style={{ fontSize: 22, fontWeight: 700, color: isPaid ? 'var(--fx-ok)' : 'var(--fx-txt)' }}>{formatCurrency(displayAmount)}</p>
-          <div className="flex flex-col items-end gap-1 w-full">
-            <Label className="fx-label">Importo manuale (€)</Label>
-            <Input type="number" step="0.01" placeholder="auto" value={override}
+        <div className="flex flex-row-reverse flex-wrap md:flex-col items-center md:items-end justify-between gap-2.5 md:min-w-[190px] pt-3 md:pt-0 border-t md:border-t-0 border-fx-line-soft">
+          <p className="hidden md:block fx-num" style={{ fontSize: 22, fontWeight: 700, color: isPaid ? 'var(--fx-ok)' : 'var(--fx-txt)' }}>{formatCurrency(displayAmount)}</p>
+          <div className="flex flex-col items-end gap-1 md:w-full">
+            <Label className="fx-label hidden md:block">Importo manuale (€)</Label>
+            <Input type="number" inputMode="decimal" step="0.01" placeholder="Importo manuale" value={override}
               onChange={(e) => { setOverride(e.target.value); setDirty(true); }}
-              className="w-44 text-right text-sm h-8 rounded-[8px] border-fx-line fx-num" />
+              className="w-40 md:w-44 text-right placeholder:text-[13px] text-sm h-9 md:h-8 rounded-[8px] border-fx-line fx-num" />
           </div>
-          <div className="flex items-center gap-3">
-            <Label className="text-[12px]" style={{ color: 'var(--fx-mut)' }}>Pagato</Label>
-            <Switch checked={isPaid} onCheckedChange={togglePaid} />
+          <div className="flex items-center md:justify-end gap-3 min-h-[36px]">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <span className="text-[12px]" style={{ color: 'var(--fx-mut)' }}>Pagato</span>
+              <Switch checked={isPaid} onCheckedChange={togglePaid} />
+            </label>
             {dirty && (
-              <button onClick={handleSave} className="h-7 text-xs rounded-[8px] px-3 text-white flex items-center gap-1" style={{ background: 'var(--fx-ind)' }}>
+              <button onClick={handleSave} className="h-9 md:h-7 text-xs font-semibold rounded-[8px] px-3 text-white flex items-center gap-1" style={{ background: 'var(--fx-ind)' }}>
                 <Save className="w-3 h-3" /> Salva
               </button>
             )}
           </div>
           {isPaid && (
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center md:flex-col md:items-end justify-between gap-2 md:gap-1 w-full md:w-auto order-last">
               <Label className="fx-label">Data pagamento</Label>
               <Input type="date" value={paidDate} onChange={(e) => { setPaidDate(e.target.value); setDirty(true); }}
-                className="w-44 text-right text-sm h-8 rounded-[8px] border-fx-line" />
+                className="w-40 md:w-44 text-right text-sm h-9 md:h-8 rounded-[8px] border-fx-line" />
             </div>
           )}
         </div>
@@ -295,36 +297,23 @@ export default function ScadenzeFiscali() {
 
   return (
     <div style={{ background: 'var(--fx-bg)', color: 'var(--fx-txt)' }}>
-      {/* Sticky header */}
-      <div style={{
-        position: 'sticky', top: 0, zIndex: 20,
-        background: 'color-mix(in oklch, var(--fx-bg) 92%, transparent)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid var(--fx-line-soft)',
-        padding: '0 30px',
-        display: 'flex', alignItems: 'center', gap: 14,
-        height: 56,
-      }}>
-        <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em' }}>Scadenze Fiscali</div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
+      <PageHeader
+        title="Scadenze"
+        subtitle={`Da versare ${formatCurrency(summary.toPay)} nel ${selectedYear}`}
+        actions={
           <button
             onClick={() => setShowSettings(s => !s)}
-            className="flex items-center gap-2 text-[12.5px] font-semibold rounded-[8px] px-3 py-1.5 transition-colors"
+            aria-label="Scadenze personalizzate"
+            className="flex items-center gap-2 text-[12.5px] font-semibold rounded-[9px] px-3 h-[34px] transition-colors"
             style={{ background: showSettings ? 'var(--fx-ind)' : 'var(--fx-panel)', color: showSettings ? '#fff' : 'var(--fx-mut)', border: '1px solid var(--fx-line)' }}
           >
-            <Settings className="w-3.5 h-3.5" /> Impostazioni
+            <Settings className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Impostazioni</span>
           </button>
-          <div className="fx-panel inline-flex p-1 gap-1">
-            {years.map(year => (
-              <button key={year} onClick={() => setSelectedYear(year)}
-                className="fx-num rounded-[6px] px-3 py-1 text-[12.5px] font-semibold transition-colors"
-                style={{ background: selectedYear === year ? 'var(--fx-ind)' : 'transparent', color: selectedYear === year ? '#fff' : 'var(--fx-mut)' }}>
-                {year}
-              </button>
-            ))}
-          </div>
+        }
+        extra={<YearSegment years={years} value={selectedYear} onChange={setSelectedYear} />}
+      />
 
-      <div className="animate-fade-up" style={{ padding: '24px 30px' }}>
+      <div className="animate-fade-up fx-page">
 
         {/* Settings Panel */}
         <AnimatePresence>
@@ -334,12 +323,12 @@ export default function ScadenzeFiscali() {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-              className="overflow-hidden mb-8"
+              className="overflow-hidden"
             >
-              <div className="rounded-3xl bg-white/70 border border-slate-100 shadow-apple p-6 space-y-4">
-                <div className="flex items-start gap-2 text-xs text-slate-500 bg-slate-50 rounded-xl p-3">
-                  <Settings className="w-4 h-4 shrink-0 mt-0.5 text-slate-400" />
-                  <span>Aliquote, coefficienti e minimi Inarcassa per anno si impostano in <Link to="/Settings" className="text-indigo-600 font-medium">Impostazioni Fiscali</Link>. Qui gestisci le scadenze personalizzate.</span>
+              <div className="fx-panel p-4 md:p-6 space-y-4">
+                <div className="flex items-start gap-2 text-xs rounded-[10px] p-3" style={{ background: 'var(--fx-chip)', color: 'var(--fx-mut)' }}>
+                  <Settings className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>Aliquote, coefficienti e minimi Inarcassa per anno si impostano in <Link to="/Settings" className="font-semibold" style={{ color: 'var(--fx-accent)' }}>Impostazioni Fiscali</Link>. Qui gestisci le scadenze personalizzate.</span>
                 </div>
                 <CustomDeadlineSettings onClose={() => setShowSettings(false)} />
               </div>
@@ -355,7 +344,7 @@ export default function ScadenzeFiscali() {
           const cTot = custom.reduce((s, d) => s + eff(d), 0);
           const cPaid = custom.reduce((s, d) => d.deadlineRecord?.is_paid ? s + eff(d) : s, 0);
           return (
-            <div className="dash-grid grid gap-6" style={{ gridTemplateColumns: '1fr 1fr', alignItems: 'start' }}>
+            <div className="dash-grid grid gap-6 md:gap-6" style={{ gridTemplateColumns: '1fr 1fr', alignItems: 'start' }}>
               {/* COLONNA SINISTRA — tasse e contributi */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 mb-1">
@@ -383,20 +372,20 @@ export default function ScadenzeFiscali() {
                   </motion.div>
                 ))}
                 {/* Riepilogo fiscale */}
-                <div className="rounded-[12px] p-6 mt-2" style={{ background: 'var(--fx-ind-deep)', color: '#fff' }}>
+                <div className="rounded-[14px] p-4 md:p-6 mt-2" style={{ background: 'var(--fx-ind-deep)', color: '#fff' }}>
                   <h3 className="fx-label mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>Riepilogo tasse {selectedYear}</h3>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-2 md:gap-4">
                     <div>
                       <p className="fx-label mb-1.5" style={{ color: 'rgba(255,255,255,0.55)' }}>Totale</p>
-                      <p className="fx-num text-xl font-bold">{formatCurrency(summary.total)}</p>
+                      <p className="fx-num text-[15px] sm:text-xl font-bold">{formatCurrency(summary.total)}</p>
                     </div>
                     <div>
                       <p className="fx-label mb-1.5" style={{ color: 'var(--fx-ind-glow)' }}>Pagato</p>
-                      <p className="fx-num text-xl font-bold" style={{ color: 'var(--fx-ind-glow)' }}>{formatCurrency(summary.paid)}</p>
+                      <p className="fx-num text-[15px] sm:text-xl font-bold" style={{ color: 'var(--fx-ind-glow)' }}>{formatCurrency(summary.paid)}</p>
                     </div>
                     <div>
                       <p className="fx-label mb-1.5" style={{ color: 'rgba(255,255,255,0.55)' }}>Da versare</p>
-                      <p className="fx-num text-xl font-bold">{formatCurrency(summary.toPay)}</p>
+                      <p className="fx-num text-[15px] sm:text-xl font-bold">{formatCurrency(summary.toPay)}</p>
                     </div>
                   </div>
                 </div>
@@ -432,20 +421,20 @@ export default function ScadenzeFiscali() {
                       </motion.div>
                     ))}
                     {/* Riepilogo personali */}
-                    <div className="fx-panel p-6 mt-2">
+                    <div className="fx-panel p-4 md:p-6 mt-2">
                       <h3 className="fx-label mb-4">Riepilogo tue scadenze {selectedYear}</h3>
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-3 gap-2 md:gap-4">
                         <div>
                           <p className="fx-label mb-1.5">Totale</p>
-                          <p className="fx-num text-xl font-bold" style={{ color: 'var(--fx-txt)' }}>{formatCurrency(cTot)}</p>
+                          <p className="fx-num text-[15px] sm:text-xl font-bold" style={{ color: 'var(--fx-txt)' }}>{formatCurrency(cTot)}</p>
                         </div>
                         <div>
                           <p className="fx-label mb-1.5" style={{ color: 'var(--fx-ok)' }}>Pagato</p>
-                          <p className="fx-num text-xl font-bold" style={{ color: 'var(--fx-ok)' }}>{formatCurrency(cPaid)}</p>
+                          <p className="fx-num text-[15px] sm:text-xl font-bold" style={{ color: 'var(--fx-ok)' }}>{formatCurrency(cPaid)}</p>
                         </div>
                         <div>
                           <p className="fx-label mb-1.5">Da pagare</p>
-                          <p className="fx-num text-xl font-bold" style={{ color: 'var(--fx-txt)' }}>{formatCurrency(cTot - cPaid)}</p>
+                          <p className="fx-num text-[15px] sm:text-xl font-bold" style={{ color: 'var(--fx-txt)' }}>{formatCurrency(cTot - cPaid)}</p>
                         </div>
                       </div>
                     </div>
@@ -455,8 +444,6 @@ export default function ScadenzeFiscali() {
             </div>
           );
         })()}
-      </div>
-      </div>
       </div>
     </div>
   );

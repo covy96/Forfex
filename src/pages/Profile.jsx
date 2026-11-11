@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Save } from "lucide-react";
+import { Save, LogOut } from "lucide-react";
+import { base44 } from '@/api/base44Client';
+import PageHeader from '@/components/layout/PageHeader';
+import Disclaimer from '@/components/Disclaimer';
 import { toast } from "sonner";
 
 const AVATAR_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#14b8a6'];
@@ -76,38 +79,36 @@ export default function Profile() {
 
   return (
     <div style={{ background: "var(--fx-bg)", color: "var(--fx-txt)" }}>
-      {/* Sticky header */}
-      <div style={{
-        position: 'sticky', top: 0, zIndex: 20,
-        background: 'color-mix(in oklch, var(--fx-bg) 92%, transparent)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid var(--fx-line-soft)',
-        padding: '0 30px',
-        display: 'flex', alignItems: 'center',
-        height: 56,
-      }}>
-        <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em' }}>Profilo</div>
-      </div>
+      <PageHeader
+        title="Profilo"
+        actions={
+          <button onClick={() => base44.auth.logout()} className="md:hidden flex items-center gap-1.5 text-[12.5px] font-semibold rounded-[9px] px-3 h-[34px]"
+            style={{ background: 'var(--fx-panel)', color: 'var(--fx-bad)', border: '1px solid var(--fx-line)' }}>
+            <LogOut className="w-3.5 h-3.5" /> Esci
+          </button>
+        }
+      />
 
-      <div className="max-w-2xl mx-auto px-6 py-8 space-y-6 animate-fade-up [&_.bg-white]:shadow-apple">
+      <div className="fx-page max-w-2xl mx-auto w-full animate-fade-up">
         {/* Avatar */}
-        <div className="flex items-center gap-4">
+        <div className="fx-panel p-4 md:p-5 flex items-center gap-4">
           <div
-            className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white flex-shrink-0"
+            className="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xl md:text-2xl font-bold text-white flex-shrink-0"
             style={{ backgroundColor: form.avatar_color }}
           >
             {initials}
           </div>
-          <div>
-            <p className="text-lg font-semibold text-slate-900">{displayName || user?.email}</p>
-            <p className="text-sm text-slate-500">{user?.email}</p>
-            <div className="flex gap-2 mt-2">
+          <div className="min-w-0">
+            <p className="text-lg font-semibold truncate">{displayName || user?.email}</p>
+            <p className="text-sm text-fx-mut truncate">{user?.email}</p>
+            <div className="flex flex-wrap gap-2 mt-2.5">
               {AVATAR_COLORS.map(c => (
                 <button
                   key={c}
                   onClick={() => setForm(f => ({ ...f, avatar_color: c }))}
-                  className={`w-5 h-5 rounded-full border-2 transition-all ${form.avatar_color === c ? 'border-slate-900 scale-110' : 'border-transparent'}`}
-                  style={{ backgroundColor: c }}
+                  aria-label={`Colore ${c}`}
+                  className={`w-6 h-6 md:w-5 md:h-5 rounded-full border-2 transition-all ${form.avatar_color === c ? 'scale-110' : 'border-transparent'}`}
+                  style={{ backgroundColor: c, ...(form.avatar_color === c ? { borderColor: 'var(--fx-txt)', boxShadow: '0 0 0 2px var(--fx-panel) inset' } : {}) }}
                 />
               ))}
             </div>
@@ -115,50 +116,50 @@ export default function Profile() {
         </div>
 
         {/* Dati Personali */}
-        <Card className="fx-panel border-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Dati Personali</CardTitle>
+        <Card className="fx-panel shadow-none">
+          <CardHeader className="p-4 pb-3 md:p-6 md:pb-3">
+            <CardTitle className="text-[15px] font-semibold">Dati Personali</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <CardContent className="space-y-4 p-4 pt-0 md:p-6 md:pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-600">Nome</Label>
+                <Label className="fx-label">Nome</Label>
                 <Input value={form.first_name} onChange={setInput('first_name')} placeholder="Mario" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-600">Cognome</Label>
+                <Label className="fx-label">Cognome</Label>
                 <Input value={form.last_name} onChange={setInput('last_name')} placeholder="Rossi" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-600">Codice Fiscale</Label>
+                <Label className="fx-label">Codice Fiscale</Label>
                 <Input value={form.fiscal_code} onChange={setInput('fiscal_code')} placeholder="RSSMRA80A01H501Z" className="uppercase" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-600">Partita IVA</Label>
+                <Label className="fx-label">Partita IVA</Label>
                 <Input value={form.vat_number} onChange={setInput('vat_number')} placeholder="12345678901" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-600">Anno di nascita</Label>
+                <Label className="fx-label">Anno di nascita</Label>
                 <Input type="number" value={form.birth_year} onChange={setInput('birth_year')} placeholder="es. 1992" />
-                <p className="text-xs text-slate-400">Per agevolazioni Inarcassa under 35</p>
+                <p className="text-xs text-fx-mut">Per agevolazioni Inarcassa under 35</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Attività */}
-        <Card className="fx-panel border-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Attività Professionale</CardTitle>
+        <Card className="fx-panel shadow-none">
+          <CardHeader className="p-4 pb-3 md:p-6 md:pb-3">
+            <CardTitle className="text-[15px] font-semibold">Attività Professionale</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <CardContent className="space-y-4 p-4 pt-0 md:p-6 md:pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-600">Professione</Label>
+                <Label className="fx-label">Professione</Label>
                 <Select value={form.profession} onValueChange={set('profession')}>
                   <SelectTrigger><SelectValue placeholder="Seleziona..." /></SelectTrigger>
                   <SelectContent>
@@ -167,7 +168,7 @@ export default function Profile() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-600">Anno inizio attività</Label>
+                <Label className="fx-label">Anno inizio attività</Label>
                 <Select value={String(form.activity_start_year)} onValueChange={set('activity_start_year')}>
                   <SelectTrigger><SelectValue placeholder="Anno..." /></SelectTrigger>
                   <SelectContent>
@@ -180,14 +181,14 @@ export default function Profile() {
         </Card>
 
         {/* Previdenza */}
-        <Card className="fx-panel border-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Cassa Previdenziale</CardTitle>
+        <Card className="fx-panel shadow-none">
+          <CardHeader className="p-4 pb-3 md:p-6 md:pb-3">
+            <CardTitle className="text-[15px] font-semibold">Cassa Previdenziale</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <CardContent className="space-y-4 p-4 pt-0 md:p-6 md:pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-600">Cassa previdenziale</Label>
+                <Label className="fx-label">Cassa previdenziale</Label>
                 <Select value={form.pension_fund} onValueChange={set('pension_fund')}>
                   <SelectTrigger><SelectValue placeholder="Seleziona..." /></SelectTrigger>
                   <SelectContent>
@@ -196,7 +197,7 @@ export default function Profile() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-600">Anno primo versamento</Label>
+                <Label className="fx-label">Anno primo versamento</Label>
                 <Select value={String(form.pension_fund_start_year)} onValueChange={set('pension_fund_start_year')}>
                   <SelectTrigger><SelectValue placeholder="Anno..." /></SelectTrigger>
                   <SelectContent>
@@ -209,13 +210,13 @@ export default function Profile() {
         </Card>
 
         {/* Regime Fiscale */}
-        <Card className="fx-panel border-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Regime Fiscale</CardTitle>
+        <Card className="fx-panel shadow-none">
+          <CardHeader className="p-4 pb-3 md:p-6 md:pb-3">
+            <CardTitle className="text-[15px] font-semibold">Regime Fiscale</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-4 pt-0 md:p-6 md:pt-0">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-600">Regime fiscale</Label>
+              <Label className="fx-label">Regime fiscale</Label>
               <Select value={form.tax_regime} onValueChange={set('tax_regime')}>
                 <SelectTrigger><SelectValue placeholder="Seleziona..." /></SelectTrigger>
                 <SelectContent>
@@ -227,25 +228,29 @@ export default function Profile() {
         </Card>
 
         {/* Notifiche */}
-        <Card className="fx-panel border-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Notifiche</CardTitle>
+        <Card className="fx-panel shadow-none">
+          <CardHeader className="p-4 pb-3 md:p-6 md:pb-3">
+            <CardTitle className="text-[15px] font-semibold">Notifiche</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-800">Notifiche email scadenze</p>
-                <p className="text-xs text-slate-500">Ricevi promemoria sulle scadenze fiscali</p>
+                <p className="text-sm font-medium ">Notifiche email scadenze</p>
+                <p className="text-xs text-fx-mut">Ricevi promemoria sulle scadenze fiscali</p>
               </div>
               <Switch checked={form.email_notifications} onCheckedChange={set('email_notifications')} />
             </div>
           </CardContent>
         </Card>
 
-        <div className="flex justify-end">
-          <Button onClick={handleSave} className="text-white" style={{ background: "var(--fx-ind)" }}>
-            <Save className="w-4 h-4 mr-2" /> Salva Profilo
+        <div className="sticky bottom-[calc(76px+env(safe-area-inset-bottom))] md:static z-10 flex md:justify-end">
+          <Button onClick={handleSave} className="w-full md:w-auto h-12 md:h-10 rounded-[10px] shadow-apple-lg md:shadow-apple text-white text-[15px] md:text-sm" style={{ background: "var(--fx-ind)" }}>
+            <Save className="w-4 h-4 mr-2" /> Salva profilo
           </Button>
+        </div>
+
+        <div className="md:hidden">
+          <Disclaimer />
         </div>
       </div>
     </div>

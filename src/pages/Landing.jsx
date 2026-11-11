@@ -28,7 +28,7 @@ const StatBubble = ({ value, label }) => (
     border: '1px solid var(--fx-line)',
     borderRadius: 16, padding: '20px 28px',
     minWidth: 120,
-  }}>
+  }} className="landing-stat">
     <span style={{
       fontFamily: 'var(--fx-mono)', fontWeight: 700, fontSize: 28,
       color: 'var(--fx-ind)', letterSpacing: '-0.04em',
@@ -78,7 +78,7 @@ export default function Landing() {
         padding: '96px max(24px, calc((100vw - 1100px) / 2)) 80px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32,
         textAlign: 'center',
-      }}>
+      }} className="landing-hero">
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           background: 'var(--fx-accent-soft)',
@@ -130,7 +130,7 @@ export default function Landing() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginTop: 16 }}>
+        <div className="landing-stats" style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginTop: 16 }}>
           <StatBubble value="23%" label="Aliquota sostitutiva regime forfettario" />
           <StatBubble value="F24" label="Scadenze calcolate automaticamente" />
           <StatBubble value="INA + INPS" label="Inarcassa e gestione separata" />
@@ -145,9 +145,8 @@ export default function Landing() {
           background: 'var(--fx-panel)',
           border: '1px solid var(--fx-line)',
           borderRadius: 20,
-          padding: 32,
-          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
-        }}>
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+        }} className="landing-mock">
           {[
             { label: 'Incassato YTD', value: '€ 28.400', sub: '+12% vs anno scorso', color: 'var(--fx-ok)' },
             { label: 'Da accantonare (tasse)', value: '€ 6.532', sub: '23% + contributi', color: 'var(--fx-warn)' },
