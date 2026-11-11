@@ -209,3 +209,78 @@
 @media (max-width: 900px) {
   .dash-grid { grid-template-columns: 1fr !important; }
 }
+/* ============================================================
+   Layout responsive (mobile-first)
+   ============================================================ */
+@layer utilities {
+  .fx-page { padding: 24px 30px 40px; display: flex; flex-direction: column; gap: 18px; }
+  .fx-scroll-x { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .fx-scroll-x::-webkit-scrollbar { display: none; }
+  .fx-tap { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .fx-tap:active { transform: scale(0.98); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+}
+
+/* Header di pagina */
+.fx-header {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in oklch, var(--fx-bg) 88%, transparent);
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: 1px solid var(--fx-line-soft);
+}
+.fx-header-row { display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 30px; }
+.fx-header-title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fx-header-sub { display: none; }
+
+/* Selettore anno a pillole */
+.fx-seg { display: inline-flex; padding: 3px; gap: 2px; background: var(--fx-panel); border: 1px solid var(--fx-line); border-radius: 9px; }
+.fx-seg button { font-family: var(--fx-mono); font-variant-numeric: tabular-nums; font-size: 12.5px; font-weight: 600; padding: 5px 11px; border-radius: 6px; color: var(--fx-mut); white-space: nowrap; transition: background .2s, color .2s; }
+.fx-seg button[aria-pressed="true"] { background: var(--fx-ind); color: #fff; }
+
+/* Bottone primario */
+.fx-btn-primary { background: var(--fx-ind); color: #fff; border-radius: 9px; padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; transition: background .2s, transform .15s; }
+.fx-btn-primary:hover { background: var(--fx-ind-deep); }
+.fx-btn-primary:active { transform: scale(0.97); }
+.fx-btn-primary:disabled { opacity: .6; }
+
+/* Card KPI */
+.fx-kpi-value { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; white-space: nowrap; }
+
+/* Bottom navigation mobile */
+.fx-bottom-nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  background: color-mix(in oklch, var(--fx-panel) 90%, transparent);
+  backdrop-filter: saturate(180%) blur(18px);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  border-top: 1px solid var(--fx-line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (max-width: 767px) {
+  .fx-page { padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); gap: 14px; }
+  .fx-header { padding-top: env(safe-area-inset-top); }
+  .fx-header-row { padding: 0 16px; min-height: 58px; gap: 10px; }
+  .fx-header-title { font-size: 22px; font-weight: 800; letter-spacing: -0.025em; }
+  .fx-header-sub { display: block; font-size: 11.5px; color: var(--fx-mut); margin-top: -2px; }
+  .fx-header-extra { padding: 0 16px 10px; }
+  .fx-kpi-value { font-size: 26px; }
+  .fx-btn-primary { padding: 9px 12px; }
+  .fx-panel { border-radius: 14px; }
+  /* Evita lo zoom automatico di iOS sui campi di input */
+  input, select, textarea { font-size: 16px !important; }
+}
+
+/* Landing */
+.landing-mock { padding: 32px; gap: 16px; }
+@media (max-width: 767px) {
+  .landing-mock { grid-template-columns: 1fr 1fr !important; padding: 14px; gap: 10px; border-radius: 16px !important; }
+  .landing-mock > :first-child { grid-column: 1 / -1; }
+  .landing-mock > * { padding: 14px !important; min-width: 0; }
+  .landing-mock > * > div:nth-child(2) { font-size: 22px !important; }
+  .landing-stats { display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 8px !important; width: 100%; }
+  .landing-stat { min-width: 0 !important; padding: 14px 8px !important; text-align: center; }
+  .landing-stat > span:first-child { font-size: 15px !important; white-space: nowrap; }
+  .landing-hero { padding-top: 44px !important; padding-bottom: 48px !important; gap: 24px !important; }
+}

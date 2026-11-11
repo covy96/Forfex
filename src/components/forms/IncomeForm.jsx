@@ -51,7 +51,7 @@ export default function IncomeForm({ onSubmit, onClose, initialData }) {
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose?.()}>
-      <DialogContent className="rounded-[14px] sm:max-w-lg" style={{ background: 'var(--fx-panel)' }}>
+      <DialogContent className="sm:rounded-[14px] sm:max-w-lg" style={{ background: 'var(--fx-panel)' }}>
         <DialogHeader>
           <DialogTitle className="fx-sans text-xl tracking-tight" style={{ color: 'var(--fx-txt)' }}>
             {initialData?.id ? 'Modifica pagamento' : 'Registra pagamento'}
@@ -116,8 +116,8 @@ export default function IncomeForm({ onSubmit, onClose, initialData }) {
           </div>
 
           <DialogFooter className="pt-1">
-            <Button type="button" variant="outline" onClick={onClose} className="rounded-[8px]">Annulla</Button>
-            <Button type="submit" className="rounded-[8px] text-white" style={{ background: 'var(--fx-ind)' }}>Salva pagamento</Button>
+            <Button type="button" variant="outline" onClick={onClose} className="rounded-[10px] h-11 sm:h-10">Annulla</Button>
+            <Button type="submit" className="rounded-[10px] h-11 sm:h-10 text-white" style={{ background: 'var(--fx-ind)' }}>Salva pagamento</Button>
           </DialogFooter>
         </form>
       </DialogContent>

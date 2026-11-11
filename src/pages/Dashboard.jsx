@@ -3,11 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUserProfile } from '@/lib/useUserProfile';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Plus, ChevronDown, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import IncomeForm from '@/components/forms/IncomeForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import PageHeader from '@/components/layout/PageHeader';
 import { computeContributi, getTaxRate } from '@/lib/fiscalEngine';
 import { computeDeadlinesForYear } from '@/lib/fiscalPlanner';
 import { computeStato } from '@/lib/payments';
@@ -22,13 +22,12 @@ const euro2 = (n) => euro(n, 2);
 function Kpi({ label, value, sub, accent, onClick }) {
   return (
     <div onClick={onClick}
-      className={`fx-panel flex-1 flex flex-col gap-2.5 ${onClick ? 'cursor-pointer hover-lift' : ''}`}
-      style={{ padding: '20px 22px' }}>
+      className={`fx-panel fx-tap flex-1 min-w-0 flex flex-col gap-2 md:gap-2.5 p-4 md:px-[22px] md:py-5 ${onClick ? 'cursor-pointer hover-lift' : ''}`}>
       <div className="fx-label flex items-center gap-1.5">
         {label}
         {onClick && <span style={{ color: 'var(--fx-accent)', fontSize: 12 }}>›</span>}
       </div>
-      <div className="fx-num" style={{ fontSize: 32, fontWeight: 600, letterSpacing: '-0.02em', color: accent ? 'var(--fx-accent)' : 'var(--fx-txt)' }}>{value}</div>
+      <div className="fx-num fx-kpi-value" style={{ color: accent ? 'var(--fx-accent)' : 'var(--fx-txt)' }}>{value}</div>
       <div style={{ fontSize: 12.5, color: 'var(--fx-mut)', lineHeight: 1.45 }}>{sub}</div>
     </div>
   );
@@ -49,20 +48,20 @@ function Op({ children }) {
 function Bars({ data }) {
   const max = Math.max(1, ...data.map(d => d.v));
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, height: 130 }}>
+    <div className="gap-1.5 md:gap-3.5" style={{ display: 'flex', alignItems: 'flex-end', height: 140 }}>
       {data.map((d, i) => (
-        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, height: '100%', justifyContent: 'flex-end' }}>
-          <div className="fx-num" style={{ fontSize: 10.5, color: 'var(--fx-mut)' }}>{d.v ? (d.v / 1000).toFixed(1) + 'k' : ''}</div>
+        <div key={i} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, height: '100%', justifyContent: 'flex-end' }}>
+          <div className="fx-num text-[8.5px] md:text-[10.5px]" style={{ color: 'var(--fx-mut)', whiteSpace: 'nowrap' }}>{d.v ? (d.v >= 10000 ? Math.round(d.v / 1000) : (d.v / 1000).toFixed(1)) + 'k' : ''}</div>
           <div style={{ width: '100%', borderRadius: 4, height: `${(d.v / max) * 72}%`, minHeight: d.v ? 4 : 0,
             background: d.current ? 'var(--fx-ind)' : 'color-mix(in oklch, var(--fx-ind) 28%, var(--fx-chip))' }} />
-          <div className="fx-label" style={{ fontSize: 9 }}>{d.m}</div>
+          <div className="fx-label text-[8px] md:text-[9px]" style={{ letterSpacing: '0.06em' }}>{d.m}</div>
         </div>
       ))}
     </div>
   );
 }
 
-function StatusBadge({ stato }) {
+function StatusBadge({ stato, small }) {
   const map = {
     incassata: { c: 'var(--fx-ok)', t: 'INCASSATA' },
     attesa: { c: 'var(--fx-warn)', t: 'IN ATTESA' },
@@ -70,8 +69,8 @@ function StatusBadge({ stato }) {
   };
   const s = map[stato] || map.incassata;
   return (
-    <span className="fx-mono" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10.5, fontWeight: 600,
-      letterSpacing: '0.06em', padding: '4px 9px', borderRadius: 5, color: s.c, background: 'color-mix(in oklch, ' + s.c + ' 11%, transparent)' }}>
+    <span className="fx-mono" style={{ display: 'inline-flex', alignItems: 'center', gap: small ? 4 : 6, fontSize: small ? 9 : 10.5, fontWeight: 600, whiteSpace: 'nowrap',
+      letterSpacing: '0.06em', padding: small ? '2px 6px' : '4px 9px', borderRadius: 5, color: s.c, background: 'color-mix(in oklch, ' + s.c + ' 11%, transparent)' }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: s.c }} />{s.t}
     </span>
   );
@@ -97,7 +96,7 @@ function ScadenzaRow({ d }) {
           {d.day || 30} {MESI[d.month - 1]} {d.year} · F24
         </div>
       </div>
-      <div style={{ textAlign: 'right' }}>
+      <div style={{ textAlign: 'right', flexShrink: 0 }}>
         <div className="fx-num" style={{ fontSize: 14, fontWeight: 600, color: d.isPaid ? 'var(--fx-ok)' : 'var(--fx-txt)' }}>{euro(d.amount)}</div>
         {d.isPaid ? (
           <div className="fx-label" style={{ fontSize: 8.5, marginTop: 3, color: 'var(--fx-ok)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
@@ -219,49 +218,40 @@ export default function Dashboard() {
 
   return (
     <div className="fxl" style={{ background: 'var(--fx-bg)', color: 'var(--fx-txt)' }}>
-      {/* Sticky header */}
-      <div style={{
-        position: 'sticky', top: 0, zIndex: 20,
-        background: 'color-mix(in oklch, var(--fx-bg) 92%, transparent)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid var(--fx-line-soft)',
-        padding: '0 30px',
-        display: 'flex', alignItems: 'center', gap: 14,
-        height: 56,
-      }}>
-        <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em' }}>Ciao {displayName?.split(' ')[0] || ''}</div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
+      <PageHeader
+        title={`Ciao ${displayName?.split(' ')[0] || ''}`}
+        subtitle={new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
+        actions={<>
           <div className="relative">
-            <select value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))}
-              className="fx-panel fx-num appearance-none cursor-pointer" style={{ padding: '7px 28px 7px 12px', fontSize: 12.5, fontWeight: 600, color: 'var(--fx-txt)' }}>
-              {years.map(y => <option key={y} value={y}>Anno {y}</option>)}
+            <select value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))} aria-label="Anno"
+              className="fx-panel fx-num appearance-none cursor-pointer" style={{ padding: '7px 28px 7px 12px', fontSize: 12.5, fontWeight: 600, color: 'var(--fx-txt)', borderRadius: 9 }}>
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
             <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--fx-mut)' }} />
           </div>
-          <button onClick={() => { setEditingIncome(null); setShowIncomeForm(true); }}
-            style={{ background: 'var(--fx-ind)', color: '#fff', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Plus className="w-4 h-4" /> Registra pagamento
+          <button onClick={() => { setEditingIncome(null); setShowIncomeForm(true); }} className="fx-btn-primary" aria-label="Registra pagamento">
+            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Registra pagamento</span>
           </button>
-        </div>
-      </div>
+        </>}
+      />
 
-      <div className="animate-fade-up" style={{ padding: '24px 30px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <div className="animate-fade-up fx-page">
         {/* KPI */}
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        <div className="grid grid-cols-2 md:flex gap-3 md:gap-4 [&>*:nth-child(2)]:col-span-2 [&>*:nth-child(2)]:order-first md:[&>*:nth-child(2)]:order-none">
           <Kpi label={`Incassato ${selectedYear}`} value={euro(profIncome)} sub={`${withStato.filter(i => i._stato === 'incassata').length} fatture incassate`}
             onClick={() => navigate(`/Pagamenti?f=incassata&anno=${selectedYear}`)} />
           <Kpi label={`Tasse stimate ${selectedYear + 1}`} value={euro(tasseStimate)} accent
             onClick={() => setShowStima(true)}
-            sub={`${euro(imposta)} imposta + ${euro(estimatedContributi)} contributi`} />
+            sub={<>{euro(imposta)} imposta <span className="opacity-60">+</span> {euro(estimatedContributi)} contributi</>} />
           <Kpi label="Da incassare" value={euro(daIncassare)} sub={`${numAperte} aperte · ${numScadute} scadute`}
             onClick={() => navigate(`/Pagamenti?f=aperte&anno=${selectedYear}`)} />
         </div>
 
         {/* Grid */}
-        <div className="dash-grid" style={{ display: 'grid', gridTemplateColumns: '1.9fr 1fr', gap: 16, alignItems: 'start' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
+        <div className="dash-grid gap-3.5 md:gap-4" style={{ display: 'grid', gridTemplateColumns: '1.9fr 1fr', alignItems: 'start' }}>
+          <div className="gap-3.5 md:gap-4" style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
             {/* Chart */}
-            <div className="fx-panel" style={{ padding: '18px 22px' }}>
+            <div className="fx-panel p-4 md:px-[22px] md:py-[18px]">
               <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 14 }}>
                 <div className="fx-label">Incassi mensili</div>
                 <div className="fx-num" style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--fx-mut)' }}>GEN–DIC {selectedYear}</div>
@@ -269,26 +259,45 @@ export default function Dashboard() {
               <Bars data={chartData} />
             </div>
             {/* Pagamenti recenti */}
-            <div className="fx-panel" style={{ padding: '18px 22px' }}>
+            <div className="fx-panel p-4 md:px-[22px] md:py-[18px]">
               <div className="fx-label" style={{ marginBottom: 6 }}>Pagamenti recenti</div>
               {recent.length === 0 && <div style={{ fontSize: 13, color: 'var(--fx-mut)', padding: '14px 0' }}>Nessun pagamento registrato per il {selectedYear}.</div>}
-              {recent.map((p, i) => (
+              {recent.map((p, i) => {
+                const dt = (p.date || p.data_emissione) ? new Date(p.date || p.data_emissione).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : '';
+                return (
                 <div key={p.id} onClick={() => { setEditingIncome(p); setShowIncomeForm(true); }}
-                  style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.8fr 0.7fr 0.5fr auto', gap: 12, alignItems: 'center', padding: '10.5px 0', cursor: 'pointer',
-                    borderTop: i ? '1px solid var(--fx-line-soft)' : 'none' }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.cliente || p.description || 'Pagamento'}</div>
-                  <div className="fx-num" style={{ fontSize: 11.5, color: 'var(--fx-mut)' }}>{p.numero_doc || (p.type === 'professionale' ? 'PROF.' : 'PERS.')}</div>
-                  <div className="fx-num" style={{ fontSize: 13, fontWeight: 600, textAlign: 'right' }}>{euro2(Number(p.amount))}</div>
-                  <div className="fx-num" style={{ fontSize: 11.5, color: 'var(--fx-mut)', textAlign: 'right' }}>{(p.date || p.data_emissione) ? new Date(p.date || p.data_emissione).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' }) : ''}</div>
-                  <StatusBadge stato={p._stato} />
+                  className="cursor-pointer"
+                  style={{ borderTop: i ? '1px solid var(--fx-line-soft)' : 'none' }}>
+                  {/* desktop */}
+                  <div className="hidden md:grid" style={{ gridTemplateColumns: '1.5fr 0.8fr 0.7fr 0.5fr auto', gap: 12, alignItems: 'center', padding: '10.5px 0' }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.cliente || p.description || 'Pagamento'}</div>
+                    <div className="fx-num" style={{ fontSize: 11.5, color: 'var(--fx-mut)' }}>{p.numero_doc || (p.type === 'professionale' ? 'PROF.' : 'PERS.')}</div>
+                    <div className="fx-num" style={{ fontSize: 13, fontWeight: 600, textAlign: 'right' }}>{euro2(Number(p.amount))}</div>
+                    <div className="fx-num" style={{ fontSize: 11.5, color: 'var(--fx-mut)', textAlign: 'right' }}>{dt}</div>
+                    <StatusBadge stato={p._stato} />
+                  </div>
+                  {/* mobile */}
+                  <div className="md:hidden flex items-center gap-3 py-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate" style={{ fontSize: 14, fontWeight: 600 }}>{p.cliente || p.description || 'Pagamento'}</div>
+                      <div className="fx-num truncate" style={{ fontSize: 11.5, color: 'var(--fx-mut)', marginTop: 2 }}>
+                        {[p.numero_doc, dt].filter(Boolean).join(' · ')}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <div className="fx-num" style={{ fontSize: 14, fontWeight: 600 }}>{euro2(Number(p.amount))}</div>
+                      <StatusBadge stato={p._stato} small />
+                    </div>
+                  </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           {/* Colonna destra */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div className="fx-panel cursor-pointer hover-lift" style={{ padding: '18px 22px' }} onClick={() => navigate('/ScadenzeFiscali')}>
+          <div className="gap-3.5 md:gap-4" style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <div className="fx-panel fx-tap cursor-pointer hover-lift p-4 md:px-[22px] md:py-[18px]" onClick={() => navigate('/ScadenzeFiscali')}>
               <div className="fx-label flex items-center gap-1.5" style={{ marginBottom: 4 }}>
                 Prossime scadenze <span style={{ color: 'var(--fx-accent)', fontSize: 12 }}>›</span>
               </div>
@@ -298,7 +307,7 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            <div className="fx-panel cursor-pointer hover-lift" style={{ padding: '18px 22px' }} onClick={() => navigate('/ScadenzeFiscali')}>
+            <div className="fx-panel fx-tap cursor-pointer hover-lift p-4 md:px-[22px] md:py-[18px]" onClick={() => navigate('/ScadenzeFiscali')}>
               <div className="fx-label flex items-center gap-1.5" style={{ marginBottom: 12 }}>
                 Accantonamento tasse <span style={{ color: 'var(--fx-accent)', fontSize: 12 }}>›</span>
               </div>
@@ -313,7 +322,7 @@ export default function Dashboard() {
 
             {/* Spese ricorrenti (personalizzate, non tasse) */}
             {customOccurrences.length > 0 && (
-              <div className="fx-panel cursor-pointer hover-lift" style={{ padding: '18px 22px' }} onClick={() => navigate('/ScadenzeFiscali')}>
+              <div className="fx-panel fx-tap cursor-pointer hover-lift p-4 md:px-[22px] md:py-[18px]" onClick={() => navigate('/ScadenzeFiscali')}>
                 <div className="flex items-baseline justify-between mb-2.5">
                   <div className="fx-label flex items-center gap-1.5">Spese ricorrenti <span style={{ color: 'var(--fx-accent)', fontSize: 12 }}>›</span></div>
                   <div className="fx-num" style={{ fontSize: 11, color: 'var(--fx-mut)' }}>{customOccurrences.length} voci · {selectedYear}</div>
@@ -344,14 +353,14 @@ export default function Dashboard() {
 
       {/* Popup stima da accantonare */}
       <Dialog open={showStima} onOpenChange={setShowStima}>
-        <DialogContent className="rounded-[16px] sm:max-w-2xl shadow-apple-lg" style={{ background: 'var(--fx-panel)' }}>
+        <DialogContent className="sm:rounded-[16px] sm:max-w-2xl shadow-apple-lg" style={{ background: 'var(--fx-panel)' }}>
           <DialogHeader>
             <DialogTitle className="fx-label" style={{ fontSize: 11 }}>
               Stima da accantonare per il {selectedYear + 1} · forfettario{isInarcassa ? ' · Inarcassa' : ''}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="mt-2 rounded-[12px] p-5" style={{ background: 'var(--fx-bg)' }}>
+          <div className="mt-2 rounded-[12px] p-4 md:p-5" style={{ background: 'var(--fx-bg)' }}>
             <div className="stima-row" style={{ display: 'flex', alignItems: 'flex-end', gap: 16, flexWrap: 'wrap' }}>
               <Step label={`Incassato ${selectedYear}`} value={euro(profIncome)} />
               <Op>×{Math.round(coeff * 100)}%</Op>
@@ -361,9 +370,9 @@ export default function Dashboard() {
               <Op>+</Op>
               <Step label="Contributi prev." value={euro(estimatedContributi)} />
             </div>
-            <div className="mt-5 pt-4 flex items-end justify-between" style={{ borderTop: '1px solid var(--fx-line)' }}>
+            <div className="mt-5 pt-4 flex flex-wrap gap-2 items-end justify-between" style={{ borderTop: '1px solid var(--fx-line)' }}>
               <div className="fx-label" style={{ color: 'var(--fx-accent)' }}>Totale da accantonare</div>
-              <div className="fx-num" style={{ fontSize: 38, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--fx-accent)', lineHeight: 1 }}>{euro(tasseStimate)}</div>
+              <div className="fx-num text-[30px] md:text-[38px]" style={{ fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--fx-accent)', lineHeight: 1 }}>{euro(tasseStimate)}</div>
             </div>
           </div>
 

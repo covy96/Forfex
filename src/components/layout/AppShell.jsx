@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useUserProfile } from '@/lib/useUserProfile';
-import { LogOut, Menu, X } from 'lucide-react';
+import { LogOut, Home, Receipt, CalendarClock, SlidersHorizontal, UserRound } from 'lucide-react';
 import { LogoWordmark } from '@/components/brand/Logo';
 import Disclaimer from '@/components/Disclaimer';
 import { base44 } from '@/api/base44Client';
@@ -76,51 +76,58 @@ function SidebarContent({ profile, displayName, initials, location, onNavigate }
   );
 }
 
+const MOBILE_NAV = [
+  { label: 'Home', to: '/', icon: Home, match: NAV_ITEMS[0].match },
+  { label: 'Pagamenti', to: '/Pagamenti', icon: Receipt, match: NAV_ITEMS[1].match },
+  { label: 'Scadenze', to: '/ScadenzeFiscali', icon: CalendarClock, match: NAV_ITEMS[2].match },
+  { label: 'Fiscale', to: '/Settings', icon: SlidersHorizontal, match: NAV_ITEMS[3].match },
+  { label: 'Profilo', to: '/Profile', icon: UserRound, match: NAV_ITEMS[4].match },
+];
+
+function BottomNav({ location }) {
+  return (
+    <nav className="md:hidden fx-bottom-nav" aria-label="Navigazione principale">
+      <div className="flex items-stretch justify-around h-[60px] px-1">
+        {MOBILE_NAV.map(({ label, to, icon: Icon, match }) => {
+          const active = match(location.pathname);
+          return (
+            <Link key={to} to={to}
+              className="fx-tap relative flex-1 flex flex-col items-center justify-center gap-1 text-[10.5px] font-semibold"
+              style={{ color: active ? 'var(--fx-ind)' : 'var(--fx-mut)' }}
+              aria-current={active ? 'page' : undefined}>
+              {active && (
+                <motion.span layoutId="fx-nav-pill" className="absolute top-1.5 w-12 h-7 rounded-full"
+                  style={{ background: 'var(--fx-accent-soft)' }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 38 }} />
+              )}
+              <Icon className="relative w-[19px] h-[19px]" strokeWidth={active ? 2.3 : 1.9} />
+              <span className="relative">{label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
 export default function AppShell({ children }) {
   const location = useLocation();
   const { profile, initials, displayName } = useUserProfile();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const sidebarProps = { profile, displayName, initials, location };
 
   return (
-    <div className="h-screen flex overflow-hidden" style={{ background: 'var(--fx-bg)' }}>
+    <div className="h-[100dvh] flex overflow-hidden" style={{ background: 'var(--fx-bg)' }}>
       {/* Sidebar desktop */}
       <aside className="hidden md:flex w-[216px] shrink-0 flex-col border-r border-fx-line"
         style={{ background: 'var(--fx-panel)' }}>
         <SidebarContent {...sidebarProps} />
       </aside>
 
-      {/* Top bar mobile */}
-      <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-4 border-b border-fx-line"
-        style={{ background: 'var(--fx-panel)' }}>
-        <LogoWordmark size={22} />
-        <button onClick={() => setMobileOpen(true)} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-fx-chip">
-          <Menu className="w-5 h-5" style={{ color: 'var(--fx-txt)' }} />
-        </button>
-      </div>
-
-      {/* Drawer mobile */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="md:hidden fixed inset-0 z-50 bg-black/30" onClick={() => setMobileOpen(false)} />
-            <motion.aside
-              initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }}
-              transition={{ type: 'spring', stiffness: 420, damping: 38 }}
-              className="md:hidden fixed top-0 left-0 bottom-0 z-50 w-[240px] border-r border-fx-line"
-              style={{ background: 'var(--fx-panel)' }}>
-              <button onClick={() => setMobileOpen(false)} className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-fx-chip z-10">
-                <X className="w-4 h-4" style={{ color: 'var(--fx-mut)' }} />
-              </button>
-              <SidebarContent {...sidebarProps} onNavigate={() => setMobileOpen(false)} />
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
-
       {/* Contenuto */}
-      <main className="flex-1 min-w-0 pt-14 md:pt-0 overflow-y-auto">{children}</main>
+      <main className="flex-1 min-w-0 overflow-y-auto overscroll-contain">{children}</main>
+
+      {/* Tab bar mobile */}
+      <BottomNav location={location} />
     </div>
   );
 }
